@@ -5,70 +5,81 @@ import socket
 import threading
 
 def gerenciar_cliente(conexao, endereco):
+    # Informa no console que um novo cliente ingressou na rede
     print(f"[NOVA CONEXÃO] Cliente conectado do endereço: {endereco}")
     
     try:
+        # Mantém a comunicação ativa enquanto o cliente estiver conectado
         while True:
-            # Recebe os dados enviados pelo cliente (limite de 1024 bytes)
+            # Recebe os pacotes de rede com limite de 1024 bytes
             dados = conexao.recv(1024)
             
-            # Se não houver dados, o cliente desconectou abruptamente
+            # Encerra o processamento se o pacote recebido estiver vazio (desconexão)
             if not dados:
                 break
                 
-            # Decodifica os bytes recebidos para string
+            # Transforma os bytes brutos da rede em texto legível
             mensagem = dados.decode('utf-8')
             
-            # Validação adicional de segurança para mensagem vazia ou espaços
+            # Rejeita a mensagem e avisa o cliente caso ela contenha apenas espaços vazios
             if not mensagem.strip():
                 print(f"[{endereco}] Tentativa de envio de mensagem vazia rejeitada.")
                 conexao.send("Erro: A mensagem não pode ser vazia.".encode('utf-8'))
                 continue
                 
+            # Exibe a informação recebida com sucesso
             print(f"[{endereco}] Mensagem recebida: {mensagem}")
             
-            # Envia a confirmação de recebimento de volta para o cliente
+            # Codifica e despacha a confirmação oficial de volta para o emissor
             resposta = "Mensagem recebida com sucesso pelo servidor."
             conexao.send(resposta.encode('utf-8'))
             
     except Exception as e:
+        # Registra falhas inesperadas de rede durante a transmissão
         print(f"[ERRO] Ocorreu uma falha na comunicação com {endereco}: {e}")
         
     finally:
-        # Garante o encerramento seguro da conexão com este cliente específico
+        # Garante a devolução dos recursos e o fechamento do canal ao sistema operacional
         conexao.close()
         print(f"[DESCONECTADO] Conexão encerrada com o endereço: {endereco}")
 
 def iniciar_servidor():
-    # AF_INET indica IPv4 e SOCK_STREAM indica o protocolo TCP
+    # Instancia o socket principal configurado para tráfego TCP em redes IPv4
     servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
-    # Define o endereço IP (localhost) e a porta de escuta (5000)
-    # O uso do try/except evita falhas se a porta já estiver em uso
-    try:
-        servidor.bind(('localhost', 5000))
-    except Exception as e:
-        print(f"[ERRO] Não foi possível iniciar o servidor na porta 5000: {e}")
-        return
-
-    # Coloca o servidor em modo de escuta para aguardar conexões
-    servidor.listen()
-    print("[STATUS] Servidor ativo e aguardando conexões na porta 5000...")
+    # Coleta as configurações manuais ou aplica os padrões caso o usuário pressione Enter
+    ip_host = input("Digite o IP de escuta (pressione Enter para 0.0.0.0/todas as redes): ") or '0.0.0.0'
+    porta = input("Digite a porta de escuta (pressione Enter para 5000): ")
+    porta = int(porta) if porta else 5000
     
     try:
+        # Tenta acoplar o servidor ao endereço fornecido e à porta especificada
+        servidor.bind((ip_host, porta))
+    except Exception as e:
+        # Aborta a execução se o sistema operacional recusar a alocação da porta
+        print(f"[ERRO] Não foi possível iniciar o servidor na porta {porta}: {e}")
+        return
+
+    # Inicia a fila de espera para aceitar pedidos de comunicação entrantes
+    servidor.listen()
+    print(f"[STATUS] Servidor ativo e aguardando conexões em {ip_host}:{porta}...")
+    
+    try:
+        # Executa o loop infinito para absorver múltiplos clientes simultaneamente
         while True:
-            # Aceita uma nova conexão (bloqueia o código até um cliente conectar)
+            # Trava o servidor momentaneamente até que um aperto de mãos (handshake) ocorra
             conexao, endereco = servidor.accept()
             
-            # Cria uma nova thread para gerenciar o cliente conectado
+            # Direciona o cliente aceito para uma linha de execução paralela independente
             thread = threading.Thread(target=gerenciar_cliente, args=(conexao, endereco))
-            thread.daemon = True  # Permite que a thread feche se o servidor principal for encerrado
+            thread.daemon = True 
             thread.start()
             
     except KeyboardInterrupt:
+        # Permite o desligamento seguro do script ao interceptar o comando Ctrl+C
         print("\n[STATUS] Desligando o servidor...")
     finally:
-        # Garante o encerramento do socket principal do servidor
+        # Derruba o soquete de escuta matriz, finalizando a aplicação
         servidor.close()
 
 if __name__ == "__main__":
