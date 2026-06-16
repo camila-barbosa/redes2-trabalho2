@@ -23,7 +23,8 @@ async def receber_mensagens(websocket):
         print("\nConexão encerrada pelo servidor.")
 
 async def cliente_chat():
-    uri = "ws://localhost:8765"
+    ip = input("Digite o IP do servidor: ")
+    uri = f"ws://{ip}:8765"
     async with websockets.connect(uri) as websocket:
         print("Conectado ao chat! Digite suas mensagens (ou 'sair' para fechar):")
         

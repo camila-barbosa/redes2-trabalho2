@@ -12,7 +12,7 @@
 import socket
 
 def solicitar_hora():
-    HOST = '127.0.0.1'
+    HOST = input("Digite o IP do servidor: ")
     PORT = 7000
 
     cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

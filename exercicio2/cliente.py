@@ -6,7 +6,7 @@
 import socket
 
 # Configurações do servidor
-HOST = '127.0.0.1'  # Endereço do servidor (localhost para testes locais)
+HOST = input("Digite o IP do servidor: ")  # IP digitado na hora da execução
 PORT = 6000         # Porta do servidor
 BUFFER_SIZE = 65507 # Tamanho máximo seguro para UDP (64KB - headers)
 TIMEOUT = 5         # Tempo limite de espera pela resposta (segundos)
@@ -22,7 +22,7 @@ def iniciar_cliente():
     cliente.settimeout(TIMEOUT)
 
     print("=== Cliente UDP Echo ===")
-    print(f"Conectado ao servidor {HOST}:{PORT}")
+    print(f"Tentando conectar ao servidor {HOST}:{PORT}")
     print("Digite 'sair' para encerrar.\n")
 
     while True:

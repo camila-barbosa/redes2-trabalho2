@@ -33,7 +33,7 @@ def atender_cliente(conexao, endereco):
         print(f"[LOG] Conexão com {endereco} encerrada.")
 
 def iniciar_servidor():
-    HOST = '127.0.0.1'
+    HOST = '0.0.0.0'
     PORT = 7000 # Porta especificada [cite: 76]
 
     servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

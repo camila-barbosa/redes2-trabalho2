@@ -47,8 +47,8 @@ async def gerenciar_chat(websocket):
 
 async def main():
     # Inicia o servidor WebSocket na porta 8765
-    async with websockets.serve(gerenciar_chat, "localhost", 8765):
-        print("[LOG] Servidor de Chat WebSocket rodando em ws://localhost:8765")
+    async with websockets.serve(gerenciar_chat, "0.0.0.0", 8765):
+        print("[LOG] Servidor de Chat WebSocket rodando em ws://0.0.0.0:8765")
         await asyncio.Future()  # Roda indefinidamente
 
 if __name__ == "__main__":
